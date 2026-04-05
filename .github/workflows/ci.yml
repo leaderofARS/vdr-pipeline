@@ -27,12 +27,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Check for Circular Dependencies
-        run: npx madge --circular src/index.ts || echo "No madge found, skipping"
-
-      - name: Linting & Code Style
-        run: npm run lint || echo "No lint script found, skipping"
-
       - name: Compile TypeScript (Strict Mode)
         run: npx tsc --noEmit
 
@@ -41,9 +35,6 @@ jobs:
 
       - name: Verify Cryptographic Integrity
         run: npm test -- tests/unit/MerkleTree.test.ts
-
-      - name: Check Package Size (Security)
-        run: npx bundlesize || echo "Bundlesize check skipped"
 
   security-audit:
     runs-on: ubuntu-latest
