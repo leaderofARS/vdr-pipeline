@@ -23,6 +23,7 @@ build/
 src/crypto/zk/keys/
 *.json
 !package.json
+!package-lock.json
 !tsconfig.json
 !plugin.json
 
