@@ -1,0 +1,29 @@
+# Exclude source code (publish only compiled dist)
+src/
+circuits/
+tests/
+
+# Exclude ZK Artifacts (only ship runtime, not binary keys)
+*.wasm
+*.zkey
+*.ptau
+*.witness
+
+# Config & Metadata
+PLAN.md
+SKILLS.md
+.gitignore
+.npmignore
+.eslintignore
+.prettierignore
+.editorconfig
+.vscode/
+.idea/
+
+# Development
+node_modules/
+.env*
+tsconfig.json
+jest.config.js
+scripts/
+examples/

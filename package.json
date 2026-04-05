@@ -1,0 +1,67 @@
+{
+  "name": "@sipheron/vdr-pipeline",
+  "version": "0.1.0",
+  "description": "Full SDK for AI pipeline cryptography provenance. Anchor GenAI events directly on-chain or via SipHeron API.",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "default": "./dist/crypto/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "default": "./dist/errors/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./langchain": {
+      "types": "./dist/integrations/langchain/index.d.ts",
+      "default": "./dist/integrations/langchain/index.js"
+    },
+    "./openai": {
+      "types": "./dist/integrations/openai/index.d.ts",
+      "default": "./dist/integrations/openai/index.js"
+    },
+    "./llamaindex": {
+      "types": "./dist/integrations/llamaindex/index.d.ts",
+      "default": "./dist/integrations/llamaindex/index.js"
+    },
+    "./dashboard": {
+      "types": "./dist/dashboard/index.d.ts",
+      "default": "./dist/dashboard/index.js"
+    },
+    "./lineage": {
+      "types": "./dist/lineage/index.d.ts",
+      "default": "./dist/lineage/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@sipheron/vdr-core": "^1.0.1",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@langchain/core": "^1.1.38",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "fast-check": "^4.6.0",
+    "jest": "^29.5.0",
+    "llamaindex": "^0.12.1",
+    "openai": "^6.33.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  }
+}
