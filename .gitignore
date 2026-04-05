@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# ZK Proof Artifacts (Should be managed in separate repo or S3/Azure Blob)
+*.wasm
+*.zkey
+*.ptau
+*.vkey.json
+*.witness
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Secrets
+src/crypto/zk/keys/
+*.json
+!package.json
+!tsconfig.json
+!plugin.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+PLAN.md
+INTEGRATION.md
+SKILLS.md
