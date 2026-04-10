@@ -1,6 +1,6 @@
 {
   "name": "@sipheron/vdr-pipeline",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Full SDK for AI pipeline cryptography provenance. Anchor GenAI events directly on-chain or via SipHeron API.",
   "license": "Apache-2.0",
   "main": "dist/index.js",
