@@ -5,9 +5,18 @@ import { describe, it, expect, jest } from '@jest/globals';
 // Mock vdr-core as in other tests
 jest.mock('@sipheron/vdr-core', () => ({
   SipHeron: jest.fn().mockImplementation(() => ({
-    anchor: jest.fn<() => Promise<any>>().mockResolvedValue({
+    anchor: jest.fn<(opts: any) => Promise<any>>().mockResolvedValue({
       transactionSignature: 'mock_tx_sig',
       id: 'mock_id'
+    }),
+    request: jest.fn<(method: string, path: string, data?: any) => Promise<any>>().mockImplementation((method: string, path: string) => {
+      if (path === '/api/pipeline/events') {
+        return Promise.resolve({
+          txSignature: 'mock_tx_sig',
+          id: 'mock_id'
+        });
+      }
+      return Promise.reject(new Error(`Unexpected request to ${path}`));
     })
   })),
   hashDocument: jest.fn().mockImplementation(async (...args: any[]) => {

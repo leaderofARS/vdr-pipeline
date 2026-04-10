@@ -1,5 +1,5 @@
 import { BaseAnchor } from './BaseAnchor';
-import { buildExplorerUrl } from './AnchorResult';
+import { buildExplorerUrl, buildVerificationUrl } from './AnchorResult';
 import { PipelineSession, AnchorResult, PipelineConfig } from '../types';
 import { SipHeron } from '@sipheron/vdr-core';
 import { SipHeronAPIError } from '../errors';
@@ -27,61 +27,58 @@ export class SipHeronAnchor extends BaseAnchor {
     if (!session.merkleRoot) {
       throw new Error("Cannot anchor a session with no events (no merkleRoot)");
     }
-    
-    const delays = process.env.NODE_ENV === 'test' ? [0, 10, 10, 10] : [0, 1000, 4000, 16000];
-    const attempts: Array<{ attempt: number; error: string; timestamp: number }> = [];
 
-    for (let attempt = 1; attempt <= delays.length; attempt++) {
-      try {
-        if (delays[attempt - 1] > 0) {
-          await new Promise(resolve => setTimeout(resolve, delays[attempt - 1]));
-        }
-
-        const baseMeta: Record<string, string> = {
-          pipeline: session.pipelineId,
-          sessionId: session.sessionId,
-          isBatchRoot: 'true',
-          eventCount: String(session.events.length)
-        };
-        if (session.lineage) {
-          baseMeta.isLineageRoot = 'true';
-          baseMeta.lineageParentSessionId = session.lineage.parentSessionId;
-          baseMeta.lineageChildSessionIds = session.lineage.childSessionIds.join(',');
-        }
-
-        const sipheronAnchorRes = await this.client.anchor({
-          hash: session.merkleRoot,
-          metadata: baseMeta
-        });
-
-        return {
-          mode: 'managed',
-          transactionSignature: sipheronAnchorRes.transactionSignature,
-          merkleRoot: session.merkleRoot,
-          sessionId: session.sessionId,
-          eventCount: session.events.length,
-          anchoredAt: Date.now(),
-          sipheronAnchorId: sipheronAnchorRes.id,
-          explorerUrl: buildExplorerUrl(sipheronAnchorRes.transactionSignature, this.network)
-        };
-      } catch (err: any) {
-        attempts.push({
-          attempt,
-          error: err.message,
-          timestamp: Date.now()
-        });
+    try {
+      const baseMeta: Record<string, string> = {
+        isBatchRoot: 'true',
+        eventCount: String(session.events.length)
+      };
+      
+      if (session.lineage) {
+        baseMeta.isLineageRoot = 'true';
+        baseMeta.lineageParentSessionId = session.lineage.parentSessionId;
+        const joined = session.lineage.childSessionIds.join(',');
+        baseMeta.lineageChildSessionIds = joined.length > 500 ? joined.slice(0, 497) + '...' : joined;
       }
-    }
 
-    const lastError = attempts[attempts.length - 1];
-    throw new SipHeronAPIError(
-      `Managed anchor failed after ${delays.length} attempts: ${lastError.error}`,
-      {
-        statusCode: (lastError as any).statusCode || 500,
-        body: lastError.error,
+      // ── Use Dedicated AI Pipeline Route ────────────────────────────────────
+      // This prevents mixing AI provenace events with general document anchors.
+      const sipheronAnchorRes = await (this.client as any).request('POST', '/api/pipeline/events', {
+        eventType: 'custom',
+        stepName: 'finalize_session',
+        pipelineId: session.pipelineId,
         sessionId: session.sessionId,
-        attempts
-      }
-    );
+        payload: {
+          merkleRoot: session.merkleRoot,
+          merkleLeaves: session.merkleLeaves,
+          metrics: session.events.length > 0 ? (session as any).metrics : undefined,
+          ...baseMeta
+        }
+      });
+
+      // The backend returns the anchored event.
+      const event = sipheronAnchorRes;
+
+      return {
+        mode: 'managed',
+        transactionSignature: event.txSignature,
+        merkleRoot: session.merkleRoot,
+        sessionId: session.sessionId,
+        eventCount: session.events.length,
+        anchoredAt: Date.now(),
+        sipheronAnchorId: event.id,
+        explorerUrl: buildExplorerUrl(event.txSignature, this.network),
+        verificationUrl: buildVerificationUrl(event.id)
+      };
+    } catch (err: any) {
+      throw new SipHeronAPIError(
+        `Managed anchor failed: ${err.message}`,
+        {
+          statusCode: err.statusCode || 500,
+          body: err.body || err.message,
+          sessionId: session.sessionId
+        }
+      );
+    }
   }
 }

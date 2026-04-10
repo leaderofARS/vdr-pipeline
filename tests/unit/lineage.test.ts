@@ -13,9 +13,18 @@ import { LineageError } from '../../src/errors';
 jest.mock('@sipheron/vdr-core', () => ({
   SipHeron: jest.fn().mockImplementation(() => ({
     network: 'devnet',
-    anchor: jest.fn<() => Promise<any>>().mockResolvedValue({
+    anchor: jest.fn<(opts: any) => Promise<any>>().mockResolvedValue({
       transactionSignature: 'lineage_tx',
       id: 'lineage_anchor_id'
+    }),
+    request: jest.fn<(method: string, path: string, data?: any) => Promise<any>>().mockImplementation((method: string, path: string) => {
+      if (path === '/api/pipeline/events') {
+        return Promise.resolve({
+          txSignature: 'lineage_tx',
+          id: 'lineage_anchor_id'
+        });
+      }
+      return Promise.reject(new Error(`Unexpected request to ${path}`));
     })
   })),
   anchorToSolana: jest.fn<() => Promise<any>>().mockResolvedValue({

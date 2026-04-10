@@ -8,9 +8,18 @@ jest.mock('@sipheron/vdr-core', () => {
     return {
         SipHeron: jest.fn().mockImplementation(() => ({
             network: 'devnet',
-            anchor: jest.fn<() => Promise<any>>().mockResolvedValue({
+            anchor: jest.fn<(opts: any) => Promise<any>>().mockResolvedValue({
                 transactionSignature: 'sig_managed',
                 id: 'sipheron_123'
+            }),
+            request: jest.fn<(method: string, path: string, data?: any) => Promise<any>>().mockImplementation((method: string, path: string) => {
+                if (path === '/api/pipeline/events') {
+                    return Promise.resolve({
+                        txSignature: 'sig_managed',
+                        id: 'sipheron_123'
+                    });
+                }
+                return Promise.reject(new Error(`Unexpected request to ${path}`));
             })
         })),
         anchorToSolana: jest.fn<() => Promise<any>>().mockResolvedValue({
@@ -57,7 +66,7 @@ describe('Dual-Mode Anchoring', () => {
         const { SipHeron } = require('@sipheron/vdr-core');
         SipHeron.mockImplementationOnce(() => ({
             network: 'devnet',
-            anchor: jest.fn<() => Promise<any>>().mockRejectedValue(new Error('API rate limit exceeded'))
+            request: jest.fn<(method: string, path: string, data?: any) => Promise<any>>().mockRejectedValue(new Error('API rate limit exceeded'))
         }));
 
         const anchor = new SipHeronAnchor({ pipelineName: 'x', apiKey: 'test-key', network: 'devnet' });
