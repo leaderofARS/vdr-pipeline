@@ -391,13 +391,6 @@ export class Pipeline {
       'debug'
     );
 
-    // Clean up persistence after successful finalization (optional, depends on use case)
-    if (this.config.persistenceAdapter) {
-      this.store.clearPersistence().catch(err => 
-        this.log(`Failed to clear persistent state for session ${this.sessionId}: ${err.message}`, 'warn')
-      );
-    }
-
     const session = this.exportSession();
 
     if (this.anomalyDetector && this.config.anomalyDetection?.requireValidationBeforeFinalize) {
@@ -505,6 +498,13 @@ export class Pipeline {
       `Anchored. TX: ${this.anchorResult.transactionSignature}${this.anchorResult.sipheronAnchorId ? ` | AnchorID: ${this.anchorResult.sipheronAnchorId}` : ''}`,
       'info'
     );
+
+    // Clean up persistence AFTER successful anchoring
+    if (this.config.persistenceAdapter && this.store) {
+      this.store.clearPersistence().catch(err => 
+        this.log(`Failed to clear persistent state for session ${this.sessionId}: ${err.message}`, 'warn')
+      );
+    }
 
     if (this.webhooks) {
       this.webhooks.dispatch('anchor.confirmed', this.anchorResult);

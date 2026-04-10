@@ -94,6 +94,7 @@ export interface AnchorResult {
   anchoredAt: number;
   sipheronAnchorId?: string;
   explorerUrl: string;
+  verificationUrl?: string;
 }
 
 export interface PipelineSession {

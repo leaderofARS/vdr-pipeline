@@ -16,3 +16,13 @@ export function buildExplorerUrl(
   const clusterParam = network === 'devnet' ? '?cluster=devnet' : '';
   return `https://explorer.solana.com/tx/${transactionSignature}${clusterParam}`;
 }
+
+/**
+ * Build the SipHeron Verification URL for an anchored session.
+ * 
+ * @param sipheronAnchorId - The database ID or hash of the anchored record
+ * @returns Full SipHeron Verification URL
+ */
+export function buildVerificationUrl(sipheronAnchorId: string): string {
+  return `https://app.sipheron.com/ai/event/verify/${sipheronAnchorId}`;
+}
